@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 乐视TVBOX 应用图标 - 兼容Android 4.4 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 红色圆形背景 -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#E50914" />
+            <size android:width="72dp" android:height="72dp" />
+        </shape>
+    </item>
+    <!-- 内圆 - 浅红色 -->
+    <item
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF6B6B" />
+        </shape>
+    </item>
+    <!-- 播放三角 (使用shape模拟) -->
+    <item
+        android:left="26dp"
+        android:top="20dp"
+        android:right="18dp"
+        android:bottom="20dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

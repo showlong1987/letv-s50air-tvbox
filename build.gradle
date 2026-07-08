@@ -1,0 +1,101 @@
+// 乐视S50 Air TVBOX 构建配置
+// 适配 Android 4.4 (API 19) LetvUI 3.0
+
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.3'
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        applicationId "com.letv.tvbox"
+        minSdkVersion 14
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0.0"
+
+        // 乐视S50 Air: Mstar 6A918, ARMv7
+        ndk {
+            abiFilters 'armeabi-v7a', 'armeabi'
+        }
+    }
+
+    // 乐视S50 Air 只有2GB RAM, 需要限制
+    dexOptions {
+        javaMaxHeapSize "2g"
+        incremental true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // 关闭混淆避免WebView接口问题
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'app/src/main/AndroidManifest.xml'
+            java.srcDirs = ['app/src/main/java']
+            resources.srcDirs = ['app/src/main/java']
+            aidl.srcDirs = ['app/src/main/java']
+            renderscript.srcDirs = ['app/src/main/java']
+            res.srcDirs = ['app/src/main/res']
+            assets.srcDirs = ['app/src/main/assets']
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    // 兼容Android 4.4的aapt
+    aaptOptions {
+        noCompress 'html', 'js', 'css', 'json'
+    }
+}
+
+dependencies {
+    // 零外部依赖 - 纯Android原生API, 确保Android 4.4兼容
+}
+
+// 构建任务
+task buildLetvAPK(type: Exec) {
+    description = '构建乐视S50 Air TVBOX APK'
+    group = 'build'
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'gradlew.bat', 'assembleRelease'
+    } else {
+        commandLine './gradlew', 'assembleRelease'
+    }
+}
+
+// ADB安装任务
+task installToTV(type: Exec) {
+    description = '通过ADB安装到乐视电视'
+    group = 'install'
+    commandLine 'adb', 'install', '-r', 'app/build/outputs/apk/release/app-release.apk'
+}
+
+// 启动应用
+task launchApp(type: Exec) {
+    description = '在电视上启动TVBOX'
+    group = 'install'
+    commandLine 'adb', 'shell', 'am', 'start', '-n', 'com.letv.tvbox/.LetvTVBoxActivity'
+}
