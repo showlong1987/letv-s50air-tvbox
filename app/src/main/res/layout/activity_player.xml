@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Video surface - 乐视S50 Air 1920x1080 -->
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="1920dp"
+        android:layout_height="1080dp"
+        android:layout_gravity="center" />
+
+    <!-- Playback control bar -->
+    <LinearLayout
+        android:id="@+id/controlBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:background="#CC000000"
+        android:padding="15dp"
+        android:gravity="center_vertical">
+
+        <!-- Play/Pause button -->
+        <Button
+            android:id="@+id/btnPlayPause"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="||"
+            android:textSize="24sp"
+            android:background="@android:color/transparent"
+            android:textColor="#FFFFFF" />
+
+        <!-- Seek bar -->
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp" />
+
+        <!-- Time display -->
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00 / 00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:layout_marginRight="20dp" />
+
+        <!-- Fullscreen toggle -->
+        <Button
+            android:id="@+id/btnFullscreen"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="[]"
+            android:textSize="24sp"
+            android:background="@android:color/transparent"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
+    <!-- Loading indicator -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</FrameLayout>
