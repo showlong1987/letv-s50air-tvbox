@@ -57,7 +57,7 @@ jobs:
 
       # 6. 构建 APK (开启详细日志，先清理再构建)
       - name: Build with Gradle
-        run: gradle clean assembleDebug --info --stacktrace --no-daemon
+        run: gradle clean assembleDebug --info --stacktrace --scan
 
       # 7. 上传 APK
       - name: Upload APK
