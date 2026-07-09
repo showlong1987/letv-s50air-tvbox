@@ -56,10 +56,12 @@ jobs:
       - name: Clean previous builds
         run: ./gradlew clean
 
-      - name: Build with Gradle (Verbose)
+      - name: Build with Gradle (Verbose + Retry)
         env:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: ./gradlew assembleDebug --no-daemon --info --stacktrace
+        run: |
+          # 尝试构建，如果失败则重试一次
+          ./gradlew assembleDebug --no-daemon --info --stacktrace || (echo "First attempt failed, retrying..." && ./gradlew assembleDebug --no-daemon --refresh-dependencies)
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
