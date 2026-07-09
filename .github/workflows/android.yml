@@ -9,22 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 设置 Node.js 18
+      # 1. 设置 Node.js 18 (如果不需要可以不装，但保留无害)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      # 2. 拉取代码 (重点：使用 sparse-checkout 跳过 gradle/wrapper 目录，避免验证失败)
-      - name: Checkout code (without wrapper)
+      # 2. 拉取代码
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            app
-            build.gradle
-            settings.gradle
-            # 注意：我们不拉取 gradle/wrapper 目录，让 setup-gradle 自己处理
-          fetch-depth: 0
 
       # 3. 设置 JDK 17
       - name: Set up JDK 17
@@ -33,13 +26,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. 设置 Gradle (使用官方插件，跳过本地 wrapper 验证)
+      # 4. 设置 Gradle (使用官方插件)
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.10' # 使用较新的稳定版
 
-      # 5. 安装 Android SDK
+      # 5. 安装 Android SDK (这里改成 33 以适配更多新项目，你可以改回 30)
       - name: Install Android SDK and Build Tools
         env:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -55,14 +48,16 @@ jobs:
           
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           mkdir -p ~/.android/
+          # 使用腾讯云镜像加速
           echo "https://mirrors.cloud.tencent.com/AndroidSDK/repository2-1.xml" > ~/.android/repositories.cfg
           
           yes | sdkmanager --licenses > /dev/null
-          sdkmanager "platforms;android-30" "build-tools;30.0.3" "platform-tools"
+          # 安装 API 33 和对应的构建工具 (如果你的项目需要其他版本，请修改这里)
+          sdkmanager "platforms;android-33" "build-tools;33.0.2" "platform-tools"
 
-      # 6. 构建 APK (直接使用 gradle 命令)
+      # 6. 构建 APK (开启详细日志，先清理再构建)
       - name: Build with Gradle
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: gradle clean assembleDebug --info --stacktrace --no-daemon
 
       # 7. 上传 APK
       - name: Upload APK
