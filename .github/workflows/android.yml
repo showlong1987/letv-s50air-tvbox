@@ -1,14 +1,4 @@
-name: Build Letv S50 Air TVBOX APK
-
-on:
-  push:
-    branches: [ "main" ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
+steps:
       # 1. 设置 Node.js 18
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,9 +16,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. 设置 Gradle（自动下载，不依赖 gradle-wrapper.jar！）
+      # 4. 设置 Gradle（关键修复：确保这一行没有被注释！）
       - name: Set up Gradle
-        uses: actions/setup-gradle@v4
+        uses: actions/setup-gradle@v4  # <-- 确保这里没有 # 号！
         with:
           gradle-version: '7.5'
 
@@ -53,7 +43,7 @@ jobs:
           yes | sdkmanager --licenses > /dev/null
           sdkmanager "platforms;android-30" "build-tools;30.0.3" "platform-tools"
 
-      # 6. 构建 APK（直接用 gradle 命令，不依赖 gradlew）
+      # 6. 构建 APK
       - name: Build with Gradle
         run: gradle assembleDebug --no-daemon --stacktrace
 
