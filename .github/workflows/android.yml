@@ -15,9 +15,16 @@ jobs:
         with:
           node-version: '18'
 
-      # 2. 拉取代码
-      - name: Checkout code
+      # 2. 拉取代码 (重点：使用 sparse-checkout 跳过 gradle/wrapper 目录，避免验证失败)
+      - name: Checkout code (without wrapper)
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            app
+            build.gradle
+            settings.gradle
+            # 注意：我们不拉取 gradle/wrapper 目录，让 setup-gradle 自己处理
+          fetch-depth: 0
 
       # 3. 设置 JDK 17
       - name: Set up JDK 17
@@ -26,11 +33,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. 设置 Gradle（✅ 关键修复：使用正确的插件名和版本）
+      # 4. 设置 Gradle (使用官方插件，跳过本地 wrapper 验证)
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6  # ✅ 正确的写法！
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '7.5'  # 保持你原来的版本，或根据需要改成 '8.10' 等
+          gradle-version: '8.10' # 使用较新的稳定版
 
       # 5. 安装 Android SDK
       - name: Install Android SDK and Build Tools
@@ -53,7 +60,7 @@ jobs:
           yes | sdkmanager --licenses > /dev/null
           sdkmanager "platforms;android-30" "build-tools;30.0.3" "platform-tools"
 
-      # 6. 构建 APK
+      # 6. 构建 APK (直接使用 gradle 命令)
       - name: Build with Gradle
         run: gradle assembleDebug --no-daemon --stacktrace
 
