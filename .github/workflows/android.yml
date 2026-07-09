@@ -11,6 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 关键修复：强制指定 Node.js 16，解决 Node.js 20 弃用导致的初始化失败
+      - name: Set Node.js version to 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
       - name: Checkout code
         uses: actions/checkout@v4
 
