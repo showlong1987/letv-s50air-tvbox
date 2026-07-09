@@ -30,7 +30,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.10' # 使用较新的稳定版
+          gradle-version: '7.5' # 使用较新的稳定版
 
       # 5. 安装 Android SDK (这里改成 33 以适配更多新项目，你可以改回 30)
       - name: Install Android SDK and Build Tools
