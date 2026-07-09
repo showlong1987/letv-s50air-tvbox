@@ -26,11 +26,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. 设置 Gradle（自动下载，不依赖 gradle-wrapper.jar！）
+      # 4. 设置 Gradle（✅ 关键修复：使用正确的插件名和版本）
       - name: Set up Gradle
-        uses: actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6  # ✅ 正确的写法！
         with:
-          gradle-version: '7.5'
+          gradle-version: '7.5'  # 保持你原来的版本，或根据需要改成 '8.10' 等
 
       # 5. 安装 Android SDK
       - name: Install Android SDK and Build Tools
