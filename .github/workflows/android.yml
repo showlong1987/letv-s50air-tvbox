@@ -9,34 +9,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 第一步：设置 Node.js 18 (显式指定版本，避免警告)
+      # 1. 设置 Node.js (避开 Node 20 弃用警告，虽然不影响，但看着舒服)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'  # <-- 关键：指定版本 18
+          node-version: '18'
 
-      # 第二步：拉取代码
+      # 2. 拉取代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 第三步：设置 JDK 11
+      # 3. 设置 JDK 11 (移除了 cache 参数，避免 Path Validation Error)
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
-          cache: gradle
-          # 修正缓存路径：确保 gradlew 文件存在，通常它在根目录
-          # 如果报错 Path Validation Error，可以尝试删除 cache-dependency-path 这一行
-          # 或者设置为正确的路径，比如 '**/*.gradle' 或 'gradle/wrapper/gradle-wrapper.properties'
-          # 这里我们暂时注释掉它，避免报错，因为 gradle 缓存通常由 setup-java 自动处理
-          # cache-dependency-path: 'gradle/wrapper/gradle-wrapper.properties' # 可选
+          # 注意：这里不再写 cache: gradle，避免报错
 
-      # 第四步：授权 gradlew
+      # 4. 授权 gradlew
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 第五步：安装 Android SDK
+      # 5. 安装 Android SDK (保持原样)
       - name: Install Android SDK and Build Tools
         env:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -57,17 +52,18 @@ jobs:
           yes | sdkmanager --licenses > /dev/null
           sdkmanager "platforms;android-19" "build-tools;19.1.0" "platform-tools"
 
-      # 第六步：清理
+      # 6. 清理
       - name: Clean previous builds
         run: ./gradlew clean
 
-      # 第七步：构建 APK
+      # 7. 构建 APK (关键：增加 --stacktrace 以便出错时能看清原因，但这里先不加，保持简洁)
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --no-daemon --info
+        run: ./gradlew assembleDebug --no-daemon
 
-      # 第八步：上传 APK (必须恢复这一步！)
+      # 8. 上传 APK (确保路径正确)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Letv-S50-Air-TVBOX  # 这个名字会显示在 Artifacts 列表中
-          path: app/build/outputs/apk/debug/app-debug.apk  # 确保这个路径存在
+          name: Letv-S50-Air-TVBOX
+          # 确保这里是你的 APK 实际路径，通常是 app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
