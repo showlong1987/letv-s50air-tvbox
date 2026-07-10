@@ -21,7 +21,7 @@ jobs:
       # ✅ 关键：用 v6，但不要再指定 gradle-version
       # 让 Gradle Wrapper 自己决定版本（你本地是 8.5）
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Remove local.properties
         run: rm -f local.properties
