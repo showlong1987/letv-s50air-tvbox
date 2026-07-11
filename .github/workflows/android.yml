@@ -74,3 +74,17 @@ jobs:
           name: Letv-S50Air-TVBOX
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: warn
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 60  # 👈 强制超时 60 分钟，防止无限运行
+    env:
+      GRADLE_OPTS: "-Xmx2g -XX:+HeapDumpOnOutOfMemoryError"  # 👈 防止 OOM 卡死
+    steps:
+      # ... 其他步骤保持不变 ...
+
+      - name: Build with Gradle
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+        run: |
+          ./gradlew assembleRelease --no-daemon --stacktrace --info  # 👈 加 --stacktrace 和 --info 便于调试
