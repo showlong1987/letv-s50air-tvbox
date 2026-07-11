@@ -1,6 +1,3 @@
-// 乐视 S50 Air TVBOX 构建配置
-// 适配 Android 4.4 (API 19) LetvUI 3.0
-
 buildscript {
     repositories {
         google()
