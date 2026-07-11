@@ -1,74 +1,89 @@
-name: Build Letv S50 Air APK
+// 乐视 S50 Air TVBOX 构建配置
+// 适配 Android 4.4 (API 19) LetvUI 3.0
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.3'
+    }
+}
 
-jobs:
-  build:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 45   # ✅ 最多跑 45 分钟，防止无限死循环
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+apply plugin: 'com.android.application'
 
-      - name: Set up JDK 8
-        uses: actions/setup-java@v4
-        with:
-          java-version: '8'
-          distribution: 'temurin'
+android {
+    compileSdkVersion 19
+    buildToolsVersion "28.0.3"
 
-      - name: Remove local.properties
-        run: rm -f local.properties
+    defaultConfig {
+        applicationId "com.letv.tvbox"
+        minSdkVersion 14
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0.0"
 
-      - name: Install Android SDK
-        env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-        run: |
-          CMDTOOLS_DIR=${{ github.workspace }}/android-sdk/cmdline-tools
-          mkdir -p $CMDTOOLS_DIR
+        ndk {
+            abiFilters 'armeabi-v7a', 'armeabi'
+        }
+    }
 
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d $CMDTOOLS_DIR
-          mv $CMDTOOLS_DIR/cmdline-tools $CMDTOOLS_DIR/latest
-          rm -f cmdline-tools.zip
+    dexOptions {
+        javaMaxHeapSize "2g"
+        incremental true
+    }
 
-          export PATH=$CMDTOOLS_DIR/latest/bin:$PATH
-          mkdir -p ~/.android
-          yes | sdkmanager --licenses > /dev/null
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
 
-          sdkmanager \
-            "platforms;android-19" \
-            "build-tools;28.0.3" \
-            "platform-tools"
+    aaptOptions {
+        noCompress 'html', 'js', 'css', 'json'
+    }
 
-      - name: Prepare Gradle Wrapper (AGP 3.3.3 compatible)
-        run: |
-          mkdir -p gradle/wrapper
-          echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-5.4.1-all.zip' > gradle/wrapper/gradle-wrapper.properties
-          curl -sSLo gradle/wrapper/gradle-wrapper.jar \
-            https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar
-          chmod +x gradlew
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
 
-      - name: Build with Gradle
-        env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-          GRADLE_OPTS: "-Xmx2g -XX:+HeapDumpOnOutOfMemoryError -Dorg.gradle.daemon=false"
-        run: |
-          ./gradlew assembleRelease \
-            --no-daemon \
-            --info \
-            --stacktrace \
-            --parallel \
-            -Dorg.gradle.parallel=true \
-            -Dorg.gradle.caching=true
+dependencies {
+    // 零外部依赖，纯 Android 原生 API
+}
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Letv-S50Air-TVBOX
-          path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: warn
+task buildLetvAPK(type: Exec) {
+    description = '构建乐视 S50 Air TVBOX APK'
+    group = 'build'
+
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', 'gradlew.bat', 'assembleRelease'
+    } else {
+        commandLine './gradlew', 'assembleRelease'
+    }
+}
+
+task installToTV(type: Exec) {
+    description = '通过 ADB 安装到乐视电视'
+    group = 'install'
+    commandLine 'adb', 'install', '-r', 'app/build/outputs/apk/release/app-release.apk'
+}
+
+task launchApp(type: Exec) {
+    description = '在电视上启动 TVBOX'
+    group = 'install'
+    commandLine 'adb', 'shell', 'am', 'start', '-n', 'com.letv.tvbox/.LetvTVBoxActivity'
+}
