@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Letv S50 Air APK
 
 on:
   push:
@@ -7,25 +7,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04   # ✅ 严格对齐，确保无换行
+    runs-on: ubuntu-20.04   # ✅ 必须用 20.04（22.04 会炸老 NDK）
+    timeout-minutes: 45     # ✅ 安全绳：防止无限死循环
 
     steps:
-      # 1. 拉代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. JDK 8（乐视 4.4 必须）
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
 
-      # 3. 删除本地 properties
       - name: Remove local.properties
         run: rm -f local.properties
 
-      # 4. 安装 Android SDK
       - name: Install Android SDK
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
@@ -48,43 +45,30 @@ jobs:
             "build-tools;28.0.3" \
             "platform-tools"
 
-      # 5. 准备 Gradle Wrapper (AGP 3.3.3 配套 Gradle 5.4.1)
-      - name: Prepare Gradle Wrapper
+      - name: Prepare Gradle Wrapper (AGP 3.3.3 compatible)
         run: |
           mkdir -p gradle/wrapper
-
-          # ✅ AGP 3.3.3 官方配套 Gradle 5.4.1
           echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-5.4.1-all.zip' > gradle/wrapper/gradle-wrapper.properties
-
           curl -sSLo gradle/wrapper/gradle-wrapper.jar \
             https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar
-
           chmod +x gradlew
 
-      # 6. 构建 APK
       - name: Build with Gradle
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
-        run: ./gradlew assembleRelease --no-daemon
+          GRADLE_OPTS: "-Xmx2g -XX:+HeapDumpOnOutOfMemoryError -Dorg.gradle.daemon=false"
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --info \
+            --stacktrace \
+            --parallel \
+            -Dorg.gradle.parallel=true \
+            -Dorg.gradle.caching=true
 
-      # 7. 上传 APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Letv-S50Air-TVBOX
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: warn
-jobs:
-  build:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60  # 👈 强制超时 60 分钟，防止无限运行
-    env:
-      GRADLE_OPTS: "-Xmx2g -XX:+HeapDumpOnOutOfMemoryError"  # 👈 防止 OOM 卡死
-    steps:
-      # ... 其他步骤保持不变 ...
-
-      - name: Build with Gradle
-        env:
-          ANDROID_HOME: ${{ github.workspace }}/android-sdk
-        run: |
-          ./gradlew assembleRelease --no-daemon --stacktrace --info  # 👈 加 --stacktrace 和 --info 便于调试
