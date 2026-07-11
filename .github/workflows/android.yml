@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04   # ✅ 必须用 20.04（22.04 会炸老 NDK）
+    runs-on: ubuntu-22.04
     timeout-minutes: 45     # ✅ 安全绳：防止无限死循环
 
     steps:
