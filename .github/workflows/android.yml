@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45     # ✅ 安全绳：防止无限死循环
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
@@ -38,12 +38,13 @@ jobs:
 
           export PATH=$CMDTOOLS_DIR/latest/bin:$PATH
           mkdir -p ~/.android
-          yes | sdkmanager --licenses > /dev/null
+
+          yes | sdkmanager --licenses || true
 
           sdkmanager \
             "platforms;android-19" \
             "build-tools;28.0.3" \
-            "platform-tools"
+            "platform-tools" || true
 
       - name: Prepare Gradle Wrapper (AGP 3.3.3 compatible)
         run: |
@@ -61,10 +62,7 @@ jobs:
           ./gradlew assembleRelease \
             --no-daemon \
             --info \
-            --stacktrace \
-            --parallel \
-            -Dorg.gradle.parallel=true \
-            -Dorg.gradle.caching=true
+            --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
